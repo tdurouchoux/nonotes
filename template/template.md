@@ -17,9 +17,6 @@ atsgs
 
 # Conclusion
 
-
-
-
 - heure
 - sujet
 - contexte
@@ -29,10 +26,10 @@ atsgs
 - tableau conclusion
 
 3 types de réunion : > templates
-1. Reporting   multi entrant 
+1. Reporting 
 
-    1. Informations
-    2. TODOs
+   1. Informations
+   2. TODOs
 
 2. Recherche de solutions multi entrant + sortant
 
@@ -41,7 +38,7 @@ atsgs
     3. Questions restantes 
     4. ToDos
 
-3. Récupération d'information]
+3. Récupération d'information
 
     1. Sujet 1 (structure linéaire)
     2. Sujet 2 

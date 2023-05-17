@@ -145,10 +145,8 @@ def new(
     name = name.replace(' ', '_').lower()
     file = Path(home_directory).joinpath(chosen_dir).joinpath(f"{name}.md")
     
-    print(file)
-    
+    print(file)    
     current_time = dt.datetime.now().isoformat()
-    print(current_time)
     
     with open(file, 'r') as markdown:
         markdown.write(current_time)
