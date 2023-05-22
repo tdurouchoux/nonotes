@@ -2,17 +2,17 @@
 | - | - |
 | Date | {dt.date.today()} |
 | Heure | {dt.datetime.now().strftime('%H:%M:%S')} |
-| Sujet | {subject} | 
+| Sujet | {subject} |
 | tag | <{tag}> |
-| tag | <> | 
+| tag | <> |
 
 # Information
 
-* Item 1 
+* Item 1
 * Item 2
 
-# ToDos 
-x
+# ToDos
+
 1. first todo
 2. second todo
 
