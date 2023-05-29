@@ -2,8 +2,9 @@ import os
 from pathlib import Path
 import datetime as dt
 import configparser
-from typing_extensions import Annotated
+from typing import Optional, List
 
+from typing_extensions import Annotated
 import typer
 from rich import print
 from rich.syntax import Syntax
@@ -12,9 +13,10 @@ from InquirerPy.validator import PathValidator
 
 from nonotes.markdown_app import MarkdownApp
 from nonotes.markdown_file_menu import choose_file, choose_directory
+from nonotes.markdown_models import NoteModel, create_note_with_model
 
-CONFIG_PATH = Path.home().joinpath("nonotes.ini")
-CSS_PATH = Path(__file__).parent.joinpath("markdown_app.css")
+CONFIG_PATH = Path.home() / "nonotes.ini"
+CSS_PATH = Path(__file__).parent / "markdown_app.css"
 app = typer.Typer()
 
 
@@ -32,7 +34,7 @@ def get_config():
 
 
 def validate_editor(editor: str) -> bool:
-    ide_test_file = Path.home().joinpath("test_ide.md")
+    ide_test_file = Path.home() / "test_ide.md"
 
     if not ide_test_file.exists():
         with open(ide_test_file, "w") as file:
@@ -65,10 +67,10 @@ def init() -> None:
         default=str(Path.home()),
         validate=PathValidator(
             is_dir=True,
-            message="Got invalid value for nonotes path, must be existing path."
+            message="Got invalid value for nonotes path, must be existing path.",
         ),
     ).execute()
-    home_directory = Path(path).joinpath("nonotes")
+    home_directory = Path(path) / "nonotes"
 
     if not home_directory.exists():
         home_directory.mkdir()
@@ -96,7 +98,16 @@ def init() -> None:
 
 
 @app.command()
-def view(home_directory: str = typer.Option(None, "--home-directory", "-h")):
+def view(
+    home_directory: Annotated[
+        str,
+        typer.Option(
+            "--home-directory",
+            "-h",
+            help="Optional value to overwrite configured home directory",
+        ),
+    ] = None,
+):
     nonotes_config = get_config()
     markdown_app = MarkdownApp(
         nonotes_config["main"], CSS_PATH, override_directory=home_directory
@@ -106,21 +117,38 @@ def view(home_directory: str = typer.Option(None, "--home-directory", "-h")):
 
 @app.command()
 def edit(
-    file: str = typer.Option(None, "--file", "-f"),
-    home_directory: str = typer.Option(None, "--home-directory", "-h"),
-    light_editor: bool = typer.Option(False, "--light-editor", "-l"),
+    file: Annotated[str, typer.Option("--file", "-f")] = None,
+    home_directory: Annotated[
+        str,
+        typer.Option(
+            "--home-directory",
+            "-h",
+            help="Optional value to overwrite configured home directory",
+        ),
+    ] = None,
+    light_editor: Annotated[
+        bool,
+        typer.Option(
+            "--light-editor", "-l", help="Use a light editor (only if configured)"
+        ),
+    ] = False,
 ) -> None:
     nonotes_config = get_config()["main"]
 
-    if file is None:
-        if home_directory is None:
-            home_directory = nonotes_config["home_directory"]
-        print("Please choose a file to edit :")
-        file = choose_file(home_directory)
+    if home_directory is None:
+        home_directory = nonotes_config["home_directory"]
 
-    if not Path(file).exists():
+    if file is None:
+        print("Please choose a file to edit :")
+        file = Path(choose_file(home_directory))
+    else:
+        file = Path(home_directory) / file
+
+    print(file)
+
+    if not file.is_file():
         print(f"Provided file {file} does not exist")
-        typer.Exit()
+        raise typer.Abort()
 
     print(f"Starting editing of file: {file}")
 
@@ -132,28 +160,82 @@ def edit(
 
 @app.command()
 def new(
-    name: str = typer.Option(None, "--name", "-n"),
-    home_directory: str = typer.Option(None, "--home-directory", "-h"),
-    light_editor: bool = typer.Option(False, "--light-editor", "-l"),
+    title: Annotated[str, typer.Argument(help="Note filename and title")],
+    home_directory: Annotated[
+        str,
+        typer.Option(
+            "--home-directory",
+            "-h",
+            help="Optional value to overwrite configured home directory",
+        ),
+    ] = None,
+    note_path: Annotated[
+        str,
+        typer.Option(
+            "--note-path",
+            "-p",
+            help="Note path from home directory, if not existent it will be created",
+        ),
+    ] = None,
+    model: Annotated[
+        NoteModel,
+        typer.Option(
+            "--model",
+            "-m",
+            case_sensitive=False,
+            prompt=True,
+            help="Model name for note formatting",
+        ),
+    ] = NoteModel.base,
+    tag_list: Annotated[
+        Optional[List[str]],
+        typer.Option(
+            "--tag",
+            "-t",
+            help="Tag list that will be added to note (support multiple values)",
+        ),
+    ] = None,
+    light_editor: Annotated[
+        bool,
+        typer.Option(
+            "--light-editor",
+            "-l",
+            help="Use a light editor (only if configured)",
+        ),
+    ] = False,
 ) -> None:
     nonotes_config = get_config()["main"]
     if home_directory is None:
         home_directory = nonotes_config["home_directory"]
 
-    print("Please choose a directory :")
-    chosen_dir = choose_directory(home_directory)
+    if note_path is None:
+        print("Please choose a subject :")
+        file_path = choose_directory(home_directory)
+    else:
+        file_path = Path(home_directory) / note_path
+        print(file_path)
+        if not file_path.is_dir():
+            if inquirer.confirm(
+                message=f"Provided directory does not exist, create this path : {file_path} ?",
+                default=True,
+            ).execute():
+                file_path.mkdir(parents=True)
+            else:
+                raise typer.Abort()
 
-    if name is None:
-        name = inquirer.text(message="Choose a filename (no extensions) :")
+    filename = title.replace(" ", "_").lower()
+    file = file_path / f"{filename}.md"
 
-    name = name.replace(" ", "_").lower()
-    file = Path(home_directory).joinpath(chosen_dir).joinpath(f"{name}.md")
+    if file.is_file():
+        print("File already exists, please choose another title.")
+        raise typer.Abort()
 
-    print(file)
-    current_time = dt.datetime.now().isoformat()
+    create_note_with_model(file, model, title=title, tag_list=tag_list)
 
-    with open(file, "r") as markdown:
-        markdown.write(current_time)
+    if light_editor and "light_markdown_ide" in nonotes_config:
+        os.system(f"{nonotes_config['light_markdown_ide']} {file}")
+    else:
+        os.system(f"{nonotes_config['markdown_ide']} {file}")
 
 
 def main():
