@@ -8,7 +8,7 @@ from nonotes.latex import MarkdownLatex
 
 latex = MarkdownLatex()
 # EXTENSIONS = [latex]
-EXTENSIONS = ['markdown.extensions.tables']
+EXTENSIONS = ['markdown.extensions.extra', 'markdown.extensions.toc']
 
 def open_markdown_in_browser(file: pathlib.Path) -> None:
     with open(file, "r", encoding="utf-8") as file_reader:
