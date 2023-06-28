@@ -14,11 +14,15 @@ from InquirerPy.validator import PathValidator
 from nonotes.markdown_app import MarkdownApp
 from nonotes.markdown_file_menu import choose_file, choose_directory
 from nonotes.markdown_models import NoteModel, create_note_with_model
+from nonotes.browser_view import open_markdown_in_browser
 
 CONFIG_PATH = Path.home() / "nonotes.ini"
 CSS_PATH = Path(__file__).parent / "markdown_app.css"
 app = typer.Typer()
 
+# TODO add open in browser
+# safari : open -a Safari ...
+# edge : start msedge
 
 def get_config():
     if not CONFIG_PATH.exists():
@@ -114,6 +118,36 @@ def view(
     )
     markdown_app.run()
 
+@app.command()
+def display(
+    file: Annotated[str, typer.Option("--file", "-f")] = None,
+    home_directory: Annotated[
+        str,
+        typer.Option(
+            "--home-directory",
+            "-h",
+            help="Optional value to overwrite configured home directory",
+        ),
+    ] = None,) -> None:
+    
+    nonotes_config = get_config()["main"]    
+    
+    if home_directory is None:
+        home_directory = nonotes_config["home_directory"]    
+
+    if file is None:
+        print("Please choose a file to display :")
+        file = Path(choose_file(home_directory))
+    else:
+        file = Path(home_directory) / file
+
+    print(file)
+
+    if not file.is_file():
+        print(f"Provided file {file} does not exist")
+        raise typer.Abort()
+    
+    open_markdown_in_browser(file)
 
 @app.command()
 def edit(

@@ -8,6 +8,7 @@ from textual.driver import Driver
 from textual.reactive import var
 from textual.widgets import Footer, MarkdownViewer, Header, DirectoryTree
 
+from nonotes.browser_view import open_markdown_in_browser
 
 class FilteredDirectoryTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -19,6 +20,7 @@ class MarkdownApp(App):
         ("f", "toggle_files", "Directory"),
         ("t", "toggle_table_of_contents", "TOC"),
         ("r", "refresh", "Refresh"),
+        ("d", "display", "Display"),
         ("e", "edit", "Edit"),
         ("l", "light_edit", "Light edit"),
         ("q", "quit", "Quit"),
@@ -87,6 +89,9 @@ class MarkdownApp(App):
 
     async def action_refresh(self):
         await self.open_file()
+
+    def action_display(self):
+        open_markdown_in_browser(Path(self.path))
 
     def action_edit(self):
         if self.path is not None:

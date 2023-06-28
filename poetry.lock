@@ -1129,6 +1129,20 @@ files = [
 traitlets = "*"
 
 [[package]]
+name = "md-mermaid"
+version = "0.1.1"
+description = "Python-Markdown extension to add support for mermaid graph inside markdown file."
+optional = false
+python-versions = "*"
+files = [
+    {file = "md_mermaid-0.1.1-py3-none-any.whl", hash = "sha256:23da1dd476dd399c83247aead84af5e67b672e0fd3cb96899303ea6a8ed7717d"},
+    {file = "md_mermaid-0.1.1.tar.gz", hash = "sha256:71e68a658166c7e97abaa418720734d49ef2a1ff4963f3c348f14121e632ed70"},
+]
+
+[package.dependencies]
+markdown = ">=2.5"
+
+[[package]]
 name = "mdit-py-plugins"
 version = "0.3.5"
 description = "Collection of plugins for markdown-it-py"
@@ -2686,4 +2700,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "0cdee4ef9c4c7258cad2c312ab7f4bceb3727794534df25cf8456849544e80c1"
+content-hash = "411c15f644a8d9986123909c54b3c9dea1ed587618df91a8e7ef352550882de7"
