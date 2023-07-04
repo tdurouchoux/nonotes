@@ -17,7 +17,7 @@ from nonotes.markdown_models import NoteModel, create_note_with_model
 from nonotes.browser_view import open_markdown_in_browser
 
 CONFIG_PATH = Path.home() / "nonotes.ini"
-CSS_PATH = Path(__file__).parent / "markdown_app.css"
+MARKDOWN_APP_CSS = Path(__file__).parent.parent / "styling" / "markdown_app.css"
 app = typer.Typer()
 
 # TODO add open in browser
@@ -114,7 +114,7 @@ def view(
 ):
     nonotes_config = get_config()
     markdown_app = MarkdownApp(
-        nonotes_config["main"], CSS_PATH, override_directory=home_directory
+        nonotes_config["main"], MARKDOWN_APP_CSS, override_directory=home_directory
     )
     markdown_app.run()
 
